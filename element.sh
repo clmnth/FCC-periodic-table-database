@@ -9,24 +9,26 @@ else
 
   # if input is a number
   if [[ $INPUT =~ ^[0-9]+$ ]]; then
-    echo "It's a number."
-    INPUT_NUMBER_EXIST=$($PSQL "SELECT atomic_number FROM elements WHERE atomic_number=$INPUT")
-    if [[ -z $INPUT_NUMBER_EXIST ]]; then
+    ELEMENT_DATA=$($PSQL "SELECT elements.atomic_number, elements.symbol, elements.name, types.type, properties.atomic_mass, properties.melting_point_celsius, properties.boiling_point_celsius FROM elements INNER JOIN properties USING (atomic_number) INNER JOIN types USING (type_id) WHERE atomic_number=$INPUT")
+    if [[ -z $ELEMENT_DATA ]]; then
       echo "I could not find that element in the database."
     else
-      echo "I have this element in the database!"
+      echo "$ELEMENT_DATA" | while read NUMBER BAR SYMBOL BAR NAME BAR TYPE BAR MASS BAR MELTING BAR BOILING
+      do
+        echo "The element with atomic number $NUMBER is $NAME ($SYMBOL). It's a $TYPE, with a mass of $MASS amu. $NAME has a melting point of $MELTING celsius and a boiling point of $BOILING celsius."
+      done
     fi
 
   # if input is a NOT a number
   else 
-    echo "It's not a number."
-    INPUT_TEXT_EXIST=$($PSQL "SELECT symbol, name FROM elements WHERE symbol='$INPUT' OR name='$INPUT'")
-    if [[ -z $INPUT_TEXT_EXIST ]]; then
+    ELEMENT_DATA=$($PSQL "SELECT elements.atomic_number, elements.symbol, elements.name, types.type, properties.atomic_mass, properties.melting_point_celsius, properties.boiling_point_celsius FROM elements INNER JOIN properties USING (atomic_number) INNER JOIN types USING (type_id) WHERE symbol='$INPUT' OR name='$INPUT'")
+    if [[ -z $ELEMENT_DATA ]]; then
       echo "I could not find that element in the database."
     else
-       echo "I have this element in the database!"
+       echo "$ELEMENT_DATA" | while read NUMBER BAR SYMBOL BAR NAME BAR TYPE BAR MASS BAR MELTING BAR BOILING
+       do
+         echo "The element with atomic number $NUMBER is $NAME ($SYMBOL). It's a $TYPE, with a mass of $MASS amu. $NAME has a melting point of $MELTING celsius and a boiling point of $BOILING celsius."
+       done
     fi
-
-
   fi
 fi
